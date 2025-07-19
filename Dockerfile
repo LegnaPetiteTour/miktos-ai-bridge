@@ -1,5 +1,6 @@
 # Multi-stage build for security
 # Builder stage
+# Note: Vulnerabilities in the builder stage are expected and don't affect the final image
 FROM python:3.11-slim-bookworm AS builder
 
 # Set working directory
