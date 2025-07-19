@@ -1,0 +1,42 @@
+# Docker security scanning configuration
+# .dockerignore patterns for security
+
+# Version control
+.git
+.gitignore
+.github
+
+# Documentation
+README.md
+CONTRIBUTING.md
+SECURITY.md
+*.md
+
+# Development files
+.env*
+.vscode
+.idea
+*.log
+*.tmp
+*.temp
+
+# Test files
+test_*
+*_test.py
+__pycache__
+.pytest_cache
+.coverage
+
+# Build artifacts
+dist/
+build/
+*.egg-info
+
+# Dependencies (installed in container)
+node_modules/
+venv/
+.venv/
+
+# OS files
+.DS_Store
+Thumbs.db
