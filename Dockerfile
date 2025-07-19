@@ -1,7 +1,7 @@
 # Multi-stage build for security
 # Builder stage
-# Note: Vulnerabilities in the builder stage are expected and don't affect the final image
-FROM python:3.11-slim-bookworm AS builder
+# Note: Using alpine for minimal vulnerabilities
+FROM python:3.12-alpine AS builder
 
 # Create non-root user for building
 RUN groupadd -r builder && useradd -r -g builder builder
@@ -10,13 +10,11 @@ RUN groupadd -r builder && useradd -r -g builder builder
 WORKDIR /app
 
 # Install build dependencies with security updates
-RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
+RUN apk update && apk upgrade && apk add --no-cache \
     git \
     curl \
-    build-essential \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* \
-    && rm -rf /var/cache/apt/*
+    build-base \
+    linux-headers
 
 # Switch to non-root user for dependency installation
 USER builder
