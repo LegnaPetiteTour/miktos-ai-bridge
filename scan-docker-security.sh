@@ -7,9 +7,13 @@ set -e
 echo "🔒 Docker Security Scanner for Miktos AI Bridge"
 echo "================================================"
 
-# Build the image
-echo "📦 Building Docker image..."
-docker build -t miktos-ai-bridge-security-test .
+# Build the images
+echo "📦 Building Docker images..."
+echo "🔨 Building development image (Dockerfile)..."
+docker build -t miktos-ai-bridge-dev -f Dockerfile .
+
+echo "🔨 Building production image (Dockerfile.production)..."
+docker build -t miktos-ai-bridge-prod -f Dockerfile.production .
 
 # Check if Trivy is installed
 if ! command -v trivy &> /dev/null; then
@@ -24,12 +28,18 @@ if ! command -v trivy &> /dev/null; then
 fi
 
 # Run vulnerability scan
-echo "🔍 Scanning for vulnerabilities..."
-trivy image --severity HIGH,CRITICAL miktos-ai-bridge-security-test
+echo "🔍 Scanning development image for vulnerabilities..."
+trivy image --severity HIGH,CRITICAL miktos-ai-bridge-dev
+
+echo "🔍 Scanning production image for vulnerabilities..."
+trivy image --severity HIGH,CRITICAL miktos-ai-bridge-prod
 
 # Run configuration scan
-echo "🔧 Scanning Docker configuration..."
+echo "🔧 Scanning development Dockerfile configuration..."
 trivy config Dockerfile
+
+echo "🔧 Scanning production Dockerfile configuration..."
+trivy config Dockerfile.production
 
 # Check for secrets
 echo "🔐 Scanning for secrets..."
@@ -37,4 +47,6 @@ trivy fs --scanners secret .
 
 echo ""
 echo "✅ Security scan complete!"
-echo "💡 Tip: Use 'docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:latest image miktos-ai-bridge-security-test' for latest Trivy"
+echo "💡 Note: The builder stage vulnerabilities are expected and don't affect the final image."
+echo "💡 The distroless runtime image provides enhanced security by minimizing the attack surface."
+echo "💡 Tip: Use 'docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:latest image IMAGE_NAME' for latest Trivy"
