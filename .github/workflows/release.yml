@@ -1,5 +1,6 @@
 name: Release
 
+# GitHub Actions workflow for creating AI Bridge releases
 on:
   push:
     tags:
