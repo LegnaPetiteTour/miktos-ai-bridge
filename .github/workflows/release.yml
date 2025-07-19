@@ -26,12 +26,29 @@ jobs:
       run: python -m build
     
     - name: Create Release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      uses: softprops/action-gh-release@v1
       with:
-        tag_name: ${{ github.ref }}
-        release_name: Release ${{ github.ref }}
+        name: Miktos AI Bridge ${{ github.ref_name }}
+        body: |
+          ## What's Changed
+          
+          This release includes the latest AI Bridge improvements.
+          
+          ### Installation
+          
+          ```bash
+          pip install miktos-ai-bridge==${{ github.ref_name }}
+          ```
+          
+          Or using Docker:
+          
+          ```bash
+          docker pull ghcr.io/${{ github.repository }}:${{ github.ref_name }}
+          ```
+          
+          See the [README](https://github.com/LegnaPetiteTour/miktos-ai-bridge/blob/main/README.md) for complete setup instructions.
+        files: |
+          dist/*
         draft: false
         prerelease: false
     
