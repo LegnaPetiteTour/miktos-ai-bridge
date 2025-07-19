@@ -24,13 +24,15 @@ Our Dockerfile uses a multi-stage build approach:
 
 ### Best Practices Implemented
 
-- ✅ Non-root user execution (in development image)
+- ✅ Non-root user execution in builder stage
 - ✅ Multi-stage builds to reduce attack surface
 - ✅ Distroless runtime image
 - ✅ .dockerignore to exclude sensitive files
 - ✅ Dependency vulnerability scanning
 - ✅ Minimal base images
-- ✅ Regular security updates
+- ✅ Regular security updates in builder stage
+- ✅ Separate build user to minimize privilege escalation
+- ✅ Cache cleanup to reduce build artifacts
 
 ## Addressing Current Vulnerabilities
 

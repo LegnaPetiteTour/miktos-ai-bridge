@@ -3,19 +3,26 @@
 # Note: Vulnerabilities in the builder stage are expected and don't affect the final image
 FROM python:3.11-slim-bookworm AS builder
 
+# Create non-root user for building
+RUN groupadd -r builder && useradd -r -g builder builder
+
 # Set working directory
 WORKDIR /app
 
-# Install build dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# Install build dependencies with security updates
+RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
     git \
     curl \
     build-essential \
     && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /var/cache/apt/*
+
+# Switch to non-root user for dependency installation
+USER builder
 
 # Copy requirements first to leverage Docker cache
-COPY requirements.txt .
+COPY --chown=builder:builder requirements.txt .
 
 # Upgrade pip and install Python dependencies
 RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
@@ -28,8 +35,8 @@ FROM gcr.io/distroless/python3-debian12:latest
 # Set working directory
 WORKDIR /app
 
-# Copy installed packages from builder stage
-COPY --from=builder /root/.local /root/.local
+# Copy installed packages from builder stage (from non-root user)
+COPY --from=builder /home/builder/.local /root/.local
 
 # Copy application code
 COPY . .
