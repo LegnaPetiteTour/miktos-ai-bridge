@@ -1,0 +1,119 @@
+{
+  "timestamp": 1753040309.275869,
+  "summary": {
+    "total": 8,
+    "passed": 4,
+    "failed": 4,
+    "success_rate": 50.0
+  },
+  "results": {
+    "AI Bridge Initialization": {
+      "success": true,
+      "status": "ready",
+      "message": "AI Bridge initialized successfully"
+    },
+    "AI Bridge API Endpoints": {
+      "success": true,
+      "results": {
+        "/": {
+          "status_code": 200,
+          "success": true,
+          "response": {
+            "message": "Miktos AI Bridge is running!",
+            "version": "0.2.0",
+            "comfyui_integration": "active"
+          }
+        },
+        "/health": {
+          "status_code": 200,
+          "success": true,
+          "response": {
+            "status": "healthy",
+            "service": "miktos-ai-bridge",
+            "comfyui_connected": false,
+            "available_workflows": 2
+          }
+        },
+        "/api/v1/status": {
+          "status_code": 200,
+          "success": true,
+          "response": {
+            "bridge_status": "running",
+            "comfyui_status": "disconnected",
+            "comfyui_queue": {},
+            "available_models": [],
+            "total_models": 0,
+            "active_tasks": 0,
+            "available_workflows": 2
+          }
+        }
+      },
+      "message": "All endpoints working"
+    },
+    "ComfyUI Integration": {
+      "success": false,
+      "connected": false,
+      "message": "ComfyUI not available (expected in development)"
+    },
+    "Blender Connector": {
+      "success": false,
+      "connected": false,
+      "message": "Blender not available (expected without Blender running)"
+    },
+    "Texture Generation Workflow": {
+      "success": true,
+      "result": {
+        "workflow_id": "ba2d07bf-9bae-42f0-9855-500cc2554e6b",
+        "result": {
+          "success": true,
+          "job_id": "3ec35a5c-fd60-4559-94b5-a27c7a64a74f",
+          "output_paths": {
+            "diffuse": "output/textures/3ec35a5c-fd60-4559-94b5-a27c7a64a74f_diffuse.png",
+            "normal": "output/textures/3ec35a5c-fd60-4559-94b5-a27c7a64a74f_normal.png"
+          },
+          "metadata": {
+            "job_id": "3ec35a5c-fd60-4559-94b5-a27c7a64a74f",
+            "prompt": "red brick wall texture",
+            "negative_prompt": "",
+            "size": [
+              512,
+              512
+            ],
+            "maps": [
+              "diffuse",
+              "normal"
+            ],
+            "steps": 20,
+            "cfg": 7.0,
+            "model_name": "stable-diffusion-xl",
+            "generated_at": "2025-07-20T15:38:29.275155",
+            "output_paths": {
+              "diffuse": "output/textures/3ec35a5c-fd60-4559-94b5-a27c7a64a74f_diffuse.png",
+              "normal": "output/textures/3ec35a5c-fd60-4559-94b5-a27c7a64a74f_normal.png"
+            }
+          },
+          "metadata_path": "output/textures/3ec35a5c-fd60-4559-94b5-a27c7a64a74f_metadata.json"
+        }
+      },
+      "error": null,
+      "message": "Texture generation test completed"
+    },
+    "Command Processing": {
+      "success": false,
+      "error": "'NoneType' object has no attribute 'startswith'"
+    },
+    "Real-time Communication": {
+      "success": false,
+      "progress_updates": [],
+      "message": "Progress callbacks not working"
+    },
+    "Error Handling": {
+      "success": true,
+      "error_response": {
+        "success": false,
+        "error": "Unknown command: invalid_command"
+      },
+      "message": "Error handling working"
+    }
+  }
+}

@@ -71,8 +71,8 @@ class MiktosAIBridge:
             
             # Initialize ComfyUI client
             self.comfyui_client = ComfyUIClient(
-                host=settings.COMFYUI_HOST,
-                port=settings.COMFYUI_PORT
+                server_address=f"{settings.comfyui_host}:{settings.comfyui_port}",
+                timeout=settings.comfyui_timeout
             )
             
             # Initialize workflow manager

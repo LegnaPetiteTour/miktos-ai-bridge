@@ -3,7 +3,7 @@
 FROM python:3.12-alpine AS builder
 
 # Create non-root user for building
-RUN groupadd -r builder && useradd -r -g builder builder
+RUN addgroup -S builder && adduser -S -G builder builder
 
 # Set working directory
 WORKDIR /app
