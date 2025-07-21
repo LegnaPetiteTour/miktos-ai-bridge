@@ -494,6 +494,186 @@ async def websocket_task_endpoint(websocket: WebSocket, task_id: str):
     except Exception as e:
         logger.error(f"WebSocket task error: {e}")
 
+@app.websocket("/ws/blender")
+async def blender_websocket_endpoint(websocket: WebSocket):
+    """WebSocket endpoint specifically for Blender addon communication"""
+    await websocket.accept()
+    logger.info("Blender addon connected via WebSocket")
+    
+    try:
+        while True:
+            # Send Blender-specific status updates
+            status_data = {
+                "timestamp": time.time(),
+                "bridge_status": "running",
+                "blender_connected": True,
+                "active_generations": len(active_generations),
+                "available_workflows": len(workflow_manager.list_workflows()),
+                "addon_version": "1.0.0",
+                "task_updates": []
+            }
+            
+            # Add task updates with Blender-specific information
+            for task_id, task_info in active_generations.items():
+                status_data["task_updates"].append({
+                    "task_id": task_id,
+                    "status": task_info.get("status", "unknown"),
+                    "progress": task_info.get("progress", 0.0),
+                    "message": task_info.get("message", ""),
+                    "workflow_type": task_info.get("workflow_type", "unknown"),
+                    "blender_ready": task_info.get("status") == "completed"
+                })
+            
+            await websocket.send_text(json.dumps(status_data))
+            await asyncio.sleep(1)  # Faster updates for Blender
+            
+    except WebSocketDisconnect:
+        logger.info("Blender addon disconnected")
+    except Exception as e:
+        logger.error(f"Blender WebSocket error: {e}")
+
+@app.post("/api/v1/blender/generate-material")
+async def generate_blender_material(
+    material_request: Dict[str, Any],
+    background_tasks: BackgroundTasks
+):
+    """
+    Generate AI material optimized for Blender workflow
+    """
+    try:
+        # Extract Blender-specific parameters
+        workflow_name = material_request.get("workflow_type", "basic_texture")
+        parameters = material_request.get("parameters", {})
+        blender_info = material_request.get("blender_info", {})
+        
+        # Add Blender-specific optimization
+        if "blender_version" in blender_info:
+            parameters["blender_optimized"] = True
+            parameters["render_engine"] = blender_info.get("render_engine", "cycles")
+        
+        # Generate task ID
+        task_id = f"blender_{int(time.time() * 1000)}"
+        
+        # Initialize task tracking
+        active_generations[task_id] = {
+            "status": "starting",
+            "progress": 0.0,
+            "message": "Preparing Blender-optimized material generation...",
+            "workflow_type": workflow_name,
+            "blender_info": blender_info,
+            "start_time": time.time()
+        }
+        
+        # Start background generation
+        background_tasks.add_task(
+            execute_blender_workflow,
+            task_id,
+            workflow_name, 
+            parameters
+        )
+        
+        return {
+            "success": True,
+            "message": f"Blender material generation started",
+            "task_id": task_id,
+            "workflow_type": workflow_name,
+            "estimated_time": "15-30 seconds",
+            "blender_optimized": True
+        }
+        
+    except Exception as e:
+        logger.error(f"Blender material generation error: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to start material generation: {str(e)}")
+
+async def execute_blender_workflow(task_id: str, workflow_name: str, parameters: Dict[str, Any]):
+    """Execute workflow optimized for Blender integration"""
+    try:
+        logger.info(f"Starting Blender-optimized workflow: {workflow_name} (Task: {task_id})")
+        
+        # Update status
+        active_generations[task_id] = {
+            "status": "executing",
+            "progress": 10.0,
+            "message": "Generating Blender-compatible textures...",
+            "workflow_type": workflow_name
+        }
+        
+        # Get workflow template and validate parameters
+        template = workflow_manager.get_workflow_template(workflow_name)
+        if not template:
+            raise Exception(f"Workflow '{workflow_name}' not found")
+        
+        # Validate and get parameters
+        validated_params = workflow_manager._validate_and_fill_parameters(template, parameters)
+        if not validated_params:
+            raise Exception("Parameter validation failed")
+        
+        # Prepare the workflow with validated parameters
+        prepared_workflow = workflow_manager.prepare_workflow(workflow_name, validated_params)
+        
+        # Add Blender-specific enhancements
+        if validated_params.get("blender_optimized"):
+            validated_params["output_format"] = "png"  # Blender-friendly format
+            validated_params["color_space"] = "sRGB"   # Proper color space
+            validated_params["bit_depth"] = 8          # Standard bit depth
+        
+        # Progress update
+        active_generations[task_id]["progress"] = 50.0
+        active_generations[task_id]["message"] = "Processing AI generation..."
+        
+        # Execute workflow (using standalone executor)
+        if settings.comfyui_standalone_mode:
+            prompt_id = await comfyui_client.submit_workflow(prepared_workflow)
+            
+            if prompt_id:
+                # For standalone mode, create a mock result
+                result = {
+                    "status": "completed",
+                    "prompt_id": prompt_id,
+                    "outputs": [f"mock_texture_{prompt_id[:8]}.png"]
+                }
+                
+                # Progress update
+                active_generations[task_id]["progress"] = 90.0
+                active_generations[task_id]["message"] = "Preparing Blender materials..."
+                
+                # Create Blender-specific result
+                blender_result = {
+                    "texture_files": result.get("outputs", []),
+                    "material_info": {
+                        "type": "principled_bsdf",
+                        "base_color": result.get("outputs", [None])[0] if result.get("outputs") else None,
+                        "workflow_type": workflow_name,
+                        "parameters_used": validated_params
+                    },
+                    "blender_compatible": True
+                }
+                
+                # Mark as completed
+                active_generations[task_id] = {
+                    "status": "completed",
+                    "progress": 100.0,
+                    "message": "Material ready for Blender application!",
+                    "workflow_type": workflow_name,
+                    "result": blender_result,
+                    "output_path": result.get("outputs", ["No output path"])[0]
+                }
+                
+                logger.info(f"Blender workflow completed: {task_id}")
+            else:
+                raise Exception("Workflow execution failed")
+        else:
+            # External ComfyUI would go here
+            raise Exception("External ComfyUI not configured for Blender workflow")
+    
+    except Exception as e:
+        logger.error(f"Blender workflow execution error: {e}")
+        active_generations[task_id] = {
+            "status": "error",
+            "progress": 0.0,
+            "message": f"Blender workflow error: {str(e)}"
+        }
+
 if __name__ == "__main__":
     print("🚀 Starting Miktos AI Bridge...")
     print("===============================")
