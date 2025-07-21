@@ -20,12 +20,14 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Now import our modules
-from fastapi import FastAPI, HTTPException, BackgroundTasks
+from fastapi import FastAPI, HTTPException, BackgroundTasks, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import uvicorn
 from pydantic import BaseModel
 from typing import Dict, Any, Optional, List
+import json
+import time
 
 # Import our ComfyUI integration
 from src.comfyui.client import ComfyUIClient
@@ -424,6 +426,73 @@ async def execute_workflow_background(task_id: str, workflow: Dict[str, Any], wo
             "progress": 0.0,
             "message": f"Workflow error: {str(e)}"
         }
+
+# WebSocket endpoint for real-time status updates
+@app.websocket("/ws/status")
+async def websocket_status_endpoint(websocket: WebSocket):
+    """WebSocket endpoint for real-time status updates"""
+    await websocket.accept()
+    logger.info("WebSocket client connected for status updates")
+    
+    try:
+        while True:
+            # Send status update every 2 seconds
+            current_mode = "standalone" if settings.comfyui_standalone_mode else "external"
+            status_data = {
+                "timestamp": time.time(),
+                "bridge_status": "running",
+                "comfyui_status": current_mode,
+                "comfyui_mode": current_mode,
+                "active_tasks": len(active_generations),
+                "available_workflows": len(workflow_manager.get_available_templates()),
+                "task_updates": []
+            }
+            
+            # Add task updates
+            for task_id, task_info in active_generations.items():
+                status_data["task_updates"].append({
+                    "task_id": task_id,
+                    "status": task_info.get("status", "unknown"),
+                    "progress": task_info.get("progress", 0.0),
+                    "message": task_info.get("message", "")
+                })
+            
+            await websocket.send_text(json.dumps(status_data))
+            await asyncio.sleep(2)
+            
+    except WebSocketDisconnect:
+        logger.info("WebSocket client disconnected")
+    except Exception as e:
+        logger.error(f"WebSocket error: {e}")
+
+@app.websocket("/ws/tasks/{task_id}")
+async def websocket_task_endpoint(websocket: WebSocket, task_id: str):
+    """WebSocket endpoint for specific task updates"""
+    await websocket.accept()
+    logger.info(f"WebSocket client connected for task {task_id}")
+    
+    try:
+        while True:
+            if task_id in active_generations:
+                task_info = active_generations[task_id]
+                await websocket.send_text(json.dumps({
+                    "task_id": task_id,
+                    "status": task_info.get("status", "unknown"),
+                    "progress": task_info.get("progress", 0.0),
+                    "message": task_info.get("message", ""),
+                    "timestamp": time.time()
+                }))
+                
+                # Close connection if task is completed or failed
+                if task_info.get("status") in ["completed", "error"]:
+                    break
+                    
+            await asyncio.sleep(1)
+            
+    except WebSocketDisconnect:
+        logger.info(f"WebSocket client disconnected from task {task_id}")
+    except Exception as e:
+        logger.error(f"WebSocket task error: {e}")
 
 if __name__ == "__main__":
     print("🚀 Starting Miktos AI Bridge...")
