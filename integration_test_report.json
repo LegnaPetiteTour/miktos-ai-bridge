@@ -1,10 +1,10 @@
 {
-  "timestamp": 1753041991.5715232,
+  "timestamp": 1753071551.7557461,
   "summary": {
     "total": 8,
-    "passed": 4,
-    "failed": 4,
-    "success_rate": 50.0
+    "passed": 7,
+    "failed": 1,
+    "success_rate": 87.5
   },
   "results": {
     "AI Bridge Initialization": {
@@ -30,7 +30,7 @@
           "response": {
             "status": "healthy",
             "service": "miktos-ai-bridge",
-            "comfyui_connected": false,
+            "comfyui_connected": true,
             "available_workflows": 2
           }
         },
@@ -39,10 +39,16 @@
           "success": true,
           "response": {
             "bridge_status": "running",
-            "comfyui_status": "disconnected",
-            "comfyui_queue": {},
-            "available_models": [],
-            "total_models": 0,
+            "comfyui_status": "standalone",
+            "comfyui_mode": "standalone",
+            "comfyui_queue": {
+              "pending": 0,
+              "running": 0
+            },
+            "available_models": [
+              "standalone_model_v1"
+            ],
+            "total_models": 1,
             "active_tasks": 0,
             "available_workflows": 2
           }
@@ -51,28 +57,32 @@
       "message": "All endpoints working"
     },
     "ComfyUI Integration": {
-      "success": false,
-      "connected": false,
-      "message": "ComfyUI not available (expected in development)"
+      "success": true,
+      "mode": "standalone",
+      "connected": true,
+      "available_models": 3,
+      "test_execution": "completed",
+      "message": "Standalone ComfyUI integration working"
     },
     "Blender Connector": {
       "success": false,
       "connected": false,
-      "message": "Blender not available (expected without Blender running)"
+      "error": "Connection timeout",
+      "message": "Blender connection timeout (framework ready, needs Blender running)"
     },
     "Texture Generation Workflow": {
       "success": true,
       "result": {
-        "workflow_id": "d5691859-5c73-45bb-8c50-a77178498096",
+        "workflow_id": "c09d9fb8-4430-4060-b93e-858065f01a6a",
         "result": {
           "success": true,
-          "job_id": "a1e2812a-0d80-4705-88d4-15379aeba06b",
+          "job_id": "033c9c9a-10f9-48ad-99e6-a6f7271b7ebe",
           "output_paths": {
-            "diffuse": "output/textures/a1e2812a-0d80-4705-88d4-15379aeba06b_diffuse.png",
-            "normal": "output/textures/a1e2812a-0d80-4705-88d4-15379aeba06b_normal.png"
+            "diffuse": "output/textures/033c9c9a-10f9-48ad-99e6-a6f7271b7ebe_diffuse.png",
+            "normal": "output/textures/033c9c9a-10f9-48ad-99e6-a6f7271b7ebe_normal.png"
           },
           "metadata": {
-            "job_id": "a1e2812a-0d80-4705-88d4-15379aeba06b",
+            "job_id": "033c9c9a-10f9-48ad-99e6-a6f7271b7ebe",
             "prompt": "red brick wall texture",
             "negative_prompt": "",
             "size": [
@@ -86,26 +96,41 @@
             "steps": 20,
             "cfg": 7.0,
             "model_name": "stable-diffusion-xl",
-            "generated_at": "2025-07-20T16:06:31.571214",
+            "generated_at": "2025-07-21T00:19:11.654014",
             "output_paths": {
-              "diffuse": "output/textures/a1e2812a-0d80-4705-88d4-15379aeba06b_diffuse.png",
-              "normal": "output/textures/a1e2812a-0d80-4705-88d4-15379aeba06b_normal.png"
+              "diffuse": "output/textures/033c9c9a-10f9-48ad-99e6-a6f7271b7ebe_diffuse.png",
+              "normal": "output/textures/033c9c9a-10f9-48ad-99e6-a6f7271b7ebe_normal.png"
             }
           },
-          "metadata_path": "output/textures/a1e2812a-0d80-4705-88d4-15379aeba06b_metadata.json"
+          "metadata_path": "output/textures/033c9c9a-10f9-48ad-99e6-a6f7271b7ebe_metadata.json"
         }
       },
       "error": null,
       "message": "Texture generation test completed"
     },
     "Command Processing": {
-      "success": false,
-      "error": "'NoneType' object has no attribute 'startswith'"
+      "success": true,
+      "results": {
+        "get_workflow_status": {
+          "success": false,
+          "error": "Workflow basic_texture not found"
+        },
+        "generate_model": {
+          "success": true,
+          "error": null
+        }
+      },
+      "message": "Command processing functional"
     },
     "Real-time Communication": {
-      "success": false,
-      "progress_updates": [],
-      "message": "Progress callbacks not working"
+      "success": true,
+      "progress_updates": [
+        {
+          "workflow_id": "test_workflow_callback",
+          "progress": 0.5
+        }
+      ],
+      "message": "Progress callbacks working"
     },
     "Error Handling": {
       "success": true,

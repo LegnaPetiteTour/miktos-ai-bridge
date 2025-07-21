@@ -145,31 +145,50 @@ class IntegrationTester:
             return {"success": False, "error": str(e)}
     
     async def test_comfyui_integration(self) -> Dict[str, Any]:
-        """Test ComfyUI integration"""
+        """Test ComfyUI integration (standalone mode)"""
         try:
-            client = ComfyUIClient()
+            # Import our standalone executor
+            from src.comfyui.standalone_executor import StandaloneComfyUIExecutor
+            from src.core.config import settings
             
-            # Test connection
-            connected = await client.check_connection()
-            
-            if connected:
-                # Test workflow submission
-                test_workflow = {
-                    "test": "workflow",
-                    "simple": True
-                }
+            # Check if we're in standalone mode
+            if settings.comfyui_standalone_mode:
+                executor = StandaloneComfyUIExecutor()
                 
-                # This would fail without actual ComfyUI, but we test the client
+                # Test connection (should always return True for standalone)
+                connected = await executor.check_connection()
+                
+                # Test getting available models
+                models = await executor.get_available_models()
+                
+                # Test simple workflow execution
+                result = await executor.execute_simple_generation(
+                    prompt="test texture",
+                    negative_prompt="low quality",
+                    steps=10,
+                    cfg=7.0,
+                    width=256,
+                    height=256
+                )
+                
                 return {
-                    "success": True,
+                    "success": connected and len(models) > 0 and result["status"] == "completed",
+                    "mode": "standalone",
                     "connected": connected,
-                    "message": "ComfyUI client functional"
+                    "available_models": len(models),
+                    "test_execution": result["status"],
+                    "message": "Standalone ComfyUI integration working"
                 }
             else:
+                # External ComfyUI mode
+                client = ComfyUIClient()
+                connected = await client.check_connection()
+                
                 return {
-                    "success": False,
-                    "connected": False,
-                    "message": "ComfyUI not available (expected in development)"
+                    "success": connected,
+                    "mode": "external", 
+                    "connected": connected,
+                    "message": "External ComfyUI integration" if connected else "ComfyUI not available"
                 }
                 
         except Exception as e:
@@ -178,10 +197,30 @@ class IntegrationTester:
     async def test_blender_connector(self) -> Dict[str, Any]:
         """Test Blender connector"""
         try:
+            # First check if Blender executable exists
+            import os
+            from src.core.config import settings
+            
+            blender_path = settings.blender_path
+            blender_exists = os.path.exists(blender_path)
+            
+            if not blender_exists:
+                return {
+                    "success": False,
+                    "connected": False,
+                    "blender_path": blender_path,
+                    "blender_exists": False,
+                    "message": f"Blender not found at {blender_path} (framework ready, install Blender to test)"
+                }
+            
+            # Try to connect
             self.blender_connector = BlenderConnector()
             
-            # Test connection (will likely fail without Blender running)
-            connected = await self.blender_connector.connect()
+            # Set a shorter timeout for testing
+            connected = await asyncio.wait_for(
+                self.blender_connector.connect(),
+                timeout=5.0  # 5 second timeout instead of default
+            )
             
             if connected:
                 # Test basic commands
@@ -190,6 +229,8 @@ class IntegrationTester:
                 return {
                     "success": True,
                     "connected": True,
+                    "blender_path": blender_path,
+                    "blender_exists": True,
                     "scene_info": scene_info,
                     "message": "Blender connector working"
                 }
@@ -197,9 +238,18 @@ class IntegrationTester:
                 return {
                     "success": False,
                     "connected": False,
-                    "message": "Blender not available (expected without Blender running)"
+                    "blender_path": blender_path,
+                    "blender_exists": True,
+                    "message": "Blender found but not responding (start Blender with addon to test)"
                 }
                 
+        except asyncio.TimeoutError:
+            return {
+                "success": False,
+                "connected": False,
+                "error": "Connection timeout",
+                "message": "Blender connection timeout (framework ready, needs Blender running)"
+            }
         except Exception as e:
             return {"success": False, "error": str(e)}
     
@@ -241,8 +291,8 @@ class IntegrationTester:
             # Test various commands
             commands = [
                 {
-                    "command": "get_workflow_status",
-                    "parameters": {"workflow_id": "test_123"}
+                    "command": "get_workflow_status", 
+                    "parameters": {"workflow_id": "basic_texture"}  # Use actual workflow
                 },
                 {
                     "command": "generate_model",
@@ -263,7 +313,7 @@ class IntegrationTester:
             
             # Check if command handlers are working
             all_processed = all(
-                not r.get("error", "").startswith("Unknown command") 
+                not (r.get("error") or "").startswith("Unknown command") 
                 for r in results.values()
             )
             
@@ -288,11 +338,33 @@ class IntegrationTester:
             if self.ai_bridge:
                 self.ai_bridge.add_progress_callback(progress_callback)
                 
+                # Create a mock workflow execution first
+                from src.core.models import WorkflowExecution, WorkflowStatus
+                from datetime import datetime
+                
+                test_workflow_id = "test_workflow_callback"
+                execution = WorkflowExecution(
+                    id=test_workflow_id,
+                    name="Test Workflow",
+                    status=WorkflowStatus.RUNNING,
+                    progress=0.0,
+                    start_time=datetime.now(),
+                    workflow_data={"test": True}
+                )
+                self.ai_bridge.active_workflows[test_workflow_id] = execution
+                
                 # Simulate progress update
-                self.ai_bridge._update_workflow_progress("test_workflow", 0.5)
+                self.ai_bridge._update_workflow_progress(test_workflow_id, 0.5)
+                
+                # Give callback time to execute
+                await asyncio.sleep(0.1)
                 
                 # Check if callback was called
                 callback_working = len(progress_updates) > 0
+                
+                # Clean up
+                if test_workflow_id in self.ai_bridge.active_workflows:
+                    del self.ai_bridge.active_workflows[test_workflow_id]
                 
                 return {
                     "success": callback_working,
