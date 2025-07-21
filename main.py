@@ -30,6 +30,8 @@ from typing import Dict, Any, Optional, List
 # Import our ComfyUI integration
 from src.comfyui.client import ComfyUIClient
 from src.comfyui.workflow_manager import WorkflowManager, WorkflowType
+from src.comfyui.standalone_executor import StandaloneComfyUIExecutor
+from src.core.config import settings
 
 # App configuration
 app = FastAPI(
@@ -48,7 +50,12 @@ app.add_middleware(
 )
 
 # Initialize ComfyUI client and workflow manager
-comfyui_client = ComfyUIClient()
+if getattr(settings, 'comfyui_standalone_mode', False):
+    logger.info("🎨 Using standalone ComfyUI executor (development mode)")
+    comfyui_client = StandaloneComfyUIExecutor(output_dir=settings.output_dir)
+else:
+    logger.info("🔌 Using external ComfyUI server")
+    comfyui_client = ComfyUIClient()
 workflow_manager = WorkflowManager()
 
 # Global state for tracking active generations
@@ -266,24 +273,40 @@ async def list_workflows(workflow_type: Optional[str] = None):
 async def get_status():
     """Get the current status of the AI Bridge"""
     try:
-        comfyui_connected = await comfyui_client.check_connection()
-        queue_status = await comfyui_client.get_queue_status() if comfyui_connected else {}
-        available_models = await comfyui_client.get_available_models() if comfyui_connected else []
-        
-        return {
-            "bridge_status": "running",
-            "comfyui_status": "connected" if comfyui_connected else "disconnected",
-            "comfyui_queue": queue_status,
-            "available_models": available_models[:10],  # Limit for response size
-            "total_models": len(available_models),
-            "active_tasks": len(active_generations),
-            "available_workflows": len(workflow_manager.templates)
-        }
+        if settings.comfyui_standalone_mode:
+            # Standalone mode - always report as connected
+            return {
+                "bridge_status": "running",
+                "comfyui_status": "standalone",
+                "comfyui_mode": "standalone",
+                "comfyui_queue": {"pending": 0, "running": 0},
+                "available_models": ["standalone_model_v1"],
+                "total_models": 1,
+                "active_tasks": len(active_generations),
+                "available_workflows": len(workflow_manager.templates)
+            }
+        else:
+            # External ComfyUI mode
+            comfyui_connected = await comfyui_client.check_connection()
+            queue_status = await comfyui_client.get_queue_status() if comfyui_connected else {}
+            available_models = await comfyui_client.get_available_models() if comfyui_connected else []
+            
+            return {
+                "bridge_status": "running",
+                "comfyui_status": "connected" if comfyui_connected else "disconnected",
+                "comfyui_mode": "external",
+                "comfyui_queue": queue_status,
+                "available_models": available_models[:10],  # Limit for response size
+                "total_models": len(available_models),
+                "active_tasks": len(active_generations),
+                "available_workflows": len(workflow_manager.templates)
+            }
     except Exception as e:
         logger.error(f"Error getting status: {e}")
         return {
             "bridge_status": "running",
             "comfyui_status": "error",
+            "comfyui_mode": "standalone" if settings.comfyui_standalone_mode else "external",
             "error": str(e),
             "active_tasks": len(active_generations),
             "available_workflows": len(workflow_manager.templates)

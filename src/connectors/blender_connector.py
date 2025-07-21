@@ -18,6 +18,7 @@ import subprocess
 import time
 
 from .base import BaseConnector, ConnectorStatus
+from ..core.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -219,12 +220,12 @@ class BlenderConnector(BaseConnector):
             
             # Start Blender with addon
             blender_cmd = [
-                "blender",
+                settings.blender_path,
                 "--background",
                 "--python", str(addon_path / "miktos_bridge.py")
             ]
             
-            logger.info("Starting Blender with Miktos addon...")
+            logger.info(f"Starting Blender with Miktos addon: {settings.blender_path}")
             self.blender_process = subprocess.Popen(
                 blender_cmd,
                 stdout=subprocess.PIPE,

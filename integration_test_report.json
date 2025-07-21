@@ -1,5 +1,5 @@
 {
-  "timestamp": 1753040309.275869,
+  "timestamp": 1753041991.5715232,
   "summary": {
     "total": 8,
     "passed": 4,
@@ -63,16 +63,16 @@
     "Texture Generation Workflow": {
       "success": true,
       "result": {
-        "workflow_id": "ba2d07bf-9bae-42f0-9855-500cc2554e6b",
+        "workflow_id": "d5691859-5c73-45bb-8c50-a77178498096",
         "result": {
           "success": true,
-          "job_id": "3ec35a5c-fd60-4559-94b5-a27c7a64a74f",
+          "job_id": "a1e2812a-0d80-4705-88d4-15379aeba06b",
           "output_paths": {
-            "diffuse": "output/textures/3ec35a5c-fd60-4559-94b5-a27c7a64a74f_diffuse.png",
-            "normal": "output/textures/3ec35a5c-fd60-4559-94b5-a27c7a64a74f_normal.png"
+            "diffuse": "output/textures/a1e2812a-0d80-4705-88d4-15379aeba06b_diffuse.png",
+            "normal": "output/textures/a1e2812a-0d80-4705-88d4-15379aeba06b_normal.png"
           },
           "metadata": {
-            "job_id": "3ec35a5c-fd60-4559-94b5-a27c7a64a74f",
+            "job_id": "a1e2812a-0d80-4705-88d4-15379aeba06b",
             "prompt": "red brick wall texture",
             "negative_prompt": "",
             "size": [
@@ -86,13 +86,13 @@
             "steps": 20,
             "cfg": 7.0,
             "model_name": "stable-diffusion-xl",
-            "generated_at": "2025-07-20T15:38:29.275155",
+            "generated_at": "2025-07-20T16:06:31.571214",
             "output_paths": {
-              "diffuse": "output/textures/3ec35a5c-fd60-4559-94b5-a27c7a64a74f_diffuse.png",
-              "normal": "output/textures/3ec35a5c-fd60-4559-94b5-a27c7a64a74f_normal.png"
+              "diffuse": "output/textures/a1e2812a-0d80-4705-88d4-15379aeba06b_diffuse.png",
+              "normal": "output/textures/a1e2812a-0d80-4705-88d4-15379aeba06b_normal.png"
             }
           },
-          "metadata_path": "output/textures/3ec35a5c-fd60-4559-94b5-a27c7a64a74f_metadata.json"
+          "metadata_path": "output/textures/a1e2812a-0d80-4705-88d4-15379aeba06b_metadata.json"
         }
       },
       "error": null,
