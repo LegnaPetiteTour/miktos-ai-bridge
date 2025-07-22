@@ -1,24 +1,24 @@
-# Miktos AI Bridge
+# Miktos Agent - Blender Python API Bridge
 
-> High-performance Python FastAPI backend for AI workflow orchestration and ComfyUI integration
+> Intelligent Python agent that executes Blender operations through natural language commands
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python](https://img.shields.io/badge/Python-3.11+-blue?logo=python&logoColor=white)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-005571?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
-[![ComfyUI](https://img.shields.io/badge/ComfyUI-FF6B6B?logo=data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyIDJMMTMuMDkgOC4yNkwyMCA5TDEzLjA5IDE1Ljc0TDEyIDIyTDEwLjkxIDE1Ljc0TDQgOUwxMC45MSA4LjI2TDEyIDJaIiBmaWxsPSJjdXJyZW50Q29sb3IiLz4KPC9zdmc+)](https://github.com/comfyanonymous/ComfyUI)
+[![Blender](https://img.shields.io/badge/Blender-F5792A?logo=blender&logoColor=white)](https://blender.org)
 
-The Miktos AI Bridge is a robust Python FastAPI backend that orchestrates AI workflows, manages ComfyUI integration, and provides high-performance APIs for the Miktos creative platform.
+The Miktos Agent is a specialized Python backend that translates natural language commands into expert-level Blender Python API operations, enabling professional 3D content creation through conversational interfaces.
 
 ## ✨ Features
 
-- **FastAPI Backend**: High-performance async API with automatic OpenAPI documentation
-- **ComfyUI Integration**: Direct integration with ComfyUI for advanced AI workflows
-- **Workflow Management**: Create, execute, and monitor complex AI pipelines
+- **Blender Python API Bridge**: Direct manipulation of Blender scenes through Python API
+- **Natural Language Processing**: Convert conversational commands to expert Blender operations  
+- **Professional 3D Workflows**: Automated creation of complex 3D content and animations
+- **Local AI Support**: Optional texture generation with minimal API costs
+- **Skill Library**: Pre-built 3D workflow expertise for instant professional results
 - **Real-time Monitoring**: WebSocket support for live progress updates
-- **Background Processing**: Async task execution with Celery integration
-- **Model Management**: Automatic model discovery and management
-- **Security**: JWT authentication, rate limiting, and CORS protection
-- **Extensible**: Plugin architecture for custom AI integrations
+- **Background Processing**: Async task execution for complex 3D operations
+- **Extensible**: Plugin architecture for custom Blender integrations
 
 ## 🚀 Quick Start
 
